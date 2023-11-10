@@ -20,10 +20,15 @@ async def search_data(keyword):
         response = es.search(index=index_name, body=search_query)
         hits = response["hits"]["hits"]
 
-        # Use the custom mapping function to transform the data
-        mapped_results = map_search_results(hits, keyword)
+        if hits:
 
-        return JSONResponse(content={"results": mapped_results})
+            # Use the custom mapping function to transform the data
+            mapped_results = map_search_results(hits, keyword)
+
+            return JSONResponse(content={"results": mapped_results})
+        else:
+            return JSONResponse(content={"results": "No data"}, status_code=200)
+
 
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
