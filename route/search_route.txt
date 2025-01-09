@@ -1,0 +1,43 @@
+from fastapi import APIRouter, Request, HTTPException
+from controller.search_controller import search_data, get_data_index_order_goods_match
+from Services.logger import create_logger
+
+router = APIRouter()
+logger = create_logger()
+
+@router.get('/search/{keyword}')
+async def search(keyword: str, request: Request):
+    client_ip = request.client.host
+    try:
+        logger.info(f"Search request from IP: {client_ip} for keyword: {keyword}")
+        results = await search_data(keyword)
+        return results
+    except Exception as e:
+        logger.error(f"Error during search request from IP: {client_ip} for keyword: {keyword}. Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get('/searchs')
+async def searchs(keyword: str, request: Request):
+    client_ip = request.client.host
+    try:
+        logger.info(f"Search request from IP: {client_ip} for keyword: {keyword}")
+        results = await search_data(keyword)
+        return results
+    except Exception as e:
+        logger.error(f"Error during search request from IP: {client_ip} for keyword: {keyword}. Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.get('/order-goods-match')
+async def get_data(request: Request):
+    client_ip = request.client.host
+    try:
+        logger.info(f"Order-goods-match request from IP: {client_ip}")
+        results = await get_data_index_order_goods_match()
+        return results
+    except Exception as e:
+        logger.error(f"Error during order-goods-match request from IP: {client_ip}. Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+app = APIRouter()
+app.include_router(router, prefix='/api', tags=["Search"])
+

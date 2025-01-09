@@ -1,0 +1,81 @@
+# import logging
+# import os
+# from datetime import datetime
+# from logging.handlers import TimedRotatingFileHandler
+
+# class SafeTimedRotatingFileHandler(TimedRotatingFileHandler):
+#     def __init__(self, filename, when='midnight', interval=1, backupCount=0, encoding='utf-8', **kwargs):
+#         # Pass the encoding to the base class
+#         super().__init__(filename, when, interval, backupCount, encoding=encoding, **kwargs)
+
+#     def emit(self, record):
+#         """
+#         Override the emit method to check if the log file exists.
+#         If the file is deleted, it recreates the log file.
+#         """
+#         if not os.path.exists(self.baseFilename):
+#             # Reopen the file if it has been deleted
+#             self.stream = self._open()
+#         super().emit(record)
+
+# def create_logger(log_folder="logs"):
+#     # Ensure the log folder exists, if not, create it
+#     if not os.path.exists(log_folder):
+#         os.makedirs(log_folder)
+    
+#     # Get the current date in 'YYYY-MM-DD' format
+#     current_date = datetime.now().strftime('%Y-%m-%d')
+    
+#     # Create the log file path
+#     log_file_path = os.path.join(log_folder, f'{current_date}.log')
+    
+#     # Create a logger with the current date as its name
+#     logger = logging.getLogger(current_date)
+    
+#     # Avoid adding duplicate handlers
+#     if not logger.hasHandlers():
+#         logger.setLevel(logging.DEBUG)
+        
+#         # Use the custom SafeTimedRotatingFileHandler with UTF-8 encoding
+#         file_handler = SafeTimedRotatingFileHandler(log_file_path, when="midnight", interval=1, backupCount=90, encoding='utf-8')
+#         file_handler.setLevel(logging.DEBUG)
+        
+#         # Create a formatter and set it for the file handler
+#         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+#         file_handler.setFormatter(formatter)
+        
+#         # Add the file handler to the logger
+#         logger.addHandler(file_handler)
+    
+#     return logger
+
+
+from loguru import logger
+import os
+from datetime import datetime
+
+def create_logger(log_folder="logs"):
+    # Ensure the log folder exists, if not, create it
+    if not os.path.exists(log_folder):
+        os.makedirs(log_folder)
+    
+    # Get the current date in 'YYYY-MM-DD' format
+    current_date = datetime.now().strftime('%Y-%m-%d')
+    
+    # Create the log file path
+    log_file_path = os.path.join(log_folder, f'{current_date}.log')
+
+    # Remove existing handlers to avoid duplicates
+    logger.remove()
+
+    # Add a new log handler with rotation and UTF-8 encoding
+    logger.add(log_file_path, 
+               rotation="00:00",  # Rotate at midnight
+               retention="90 days",  # Keep logs for 90 days
+               encoding="utf-8", 
+               level="DEBUG", 
+               compression="zip",
+               format="{time:YYYY-MM-DD HH:mm:ss ZZ} - {level} - {message}")
+
+    return logger
+
